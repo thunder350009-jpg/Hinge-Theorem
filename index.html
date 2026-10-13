@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📐 樞紐定理互動探索</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --secondary: #F39C12;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --bg-color: #F8F9FA;
+            --text-color: #333333;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Nunito', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        /* 頁籤切換按鈕區 */
+        .tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            background-color: #E0E0E0;
+            color: #555;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            background-color: #D5D5D5;
+        }
+
+        .tab-btn.active {
