@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📐 樞紐定理與大小關係互動探索</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        capyBg: '#FDFBF7',
+                        capyCard: '#FFFFFF',
+                        capyPrimary: '#D97706', // Warm amber / capybara tone
+                        capySecondary: '#10B981', // Emerald green
+                        capyAccent: '#F59E0B',
+                        capyText: '#374151',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF7;
+            color: #374151;
+        }
+        .cute-shadow {
+            box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.1), 0 8px 10px -6px rgba(217, 119, 6, 0.1);
+        }
+        /* Range slider custom styling */
+        input[type=range] {
+            accent-color: #D97706;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-6">
+
+    <header class="w-full max-w-7xl mx-auto mb-6">
+        <div class="bg-gradient-to-r from-amber-500 via-orange-400 to-amber-600 rounded-3xl p-6 text-white cute-shadow flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4 text-center md:text-left">
+                <div class="text-5xl bg-white/20 p-3 rounded-2xl backdrop-blur-sm">🦫</div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black tracking-wide">📐 樞紐定理與大小關係互動探索</h1>
+                    <p class="text-amber-100 text-sm md:text-base font-medium mt-1">小學五年級趣味數學教材 • 跟著水豚老師一起動手玩幾何！</p>
+                </div>
+            </div>
+            <!-- Mode Switch Buttons -->
+            <div class="flex bg-white/15 p-1.5 rounded-2xl backdrop-blur-md gap-2 w-full md:w-auto justify-center">
+                <button id="btnExplore" onclick="switchMode('explore')" class="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-base transition-all duration-300 bg-white text-amber-700 shadow-md">
+                    🌍 自由探索模式
+                </button>
+                <button id="btnGame" onclick="switchMode('game')" class="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-base transition-all duration-300 text-white hover:bg-white/20">
+                    🎮 水豚老師大小挑戰
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-7xl mx-auto flex-grow flex flex-col">
+
+        <!-- ==================== FREE EXPLORATION MODE ==================== -->
+        <section id="exploreSection" class="w-full flex flex-col gap-6">
+            
+            <!-- Global Parameters Control Bar -->
+            <div class="bg-white rounded-2xl p-6 cute-shadow border-2 border-amber-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">⚙️</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-amber-900">固定邊長設定 (三角形的兩條固定鄰邊)</h2>
+                        <p class="text-xs text-gray-500">調整固定邊 $a$ 與 $b$ 的長度，觀察三角形隨夾角變化的情形</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-6 justify-center">
+                    <div class="flex items-center gap-3 bg-amber-50 px-4 py-2 rounded-xl border border-amber-200">
+                        <label for="inputA" class="font-bold text-amber-800">固定邊 a:</label>
+                        <input type="range" id="inputA" min="3" max="8" step="1" value="4" oninput="updateGlobalSides()" class="w-24 cursor-pointer">
+                        <span id="valA" class="font-black text-amber-700 w-6 text-center text-lg">4</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-amber-50 px-4 py-2 rounded-xl border border-amber-200">
+                        <label for="inputB" class="font-bold text-amber-800">固定邊 b:</label>
+                        <input type="range" id="inputB" min="3" max="8" step="1" value="5" oninput="updateGlobalSides()" class="w-24 cursor-pointer">
+                        <span id="valB" class="font-black text-amber-700 w-6 text-center text-lg">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Three Exploration Cards Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Card 1: Acute Exploration -->
+                <div class="bg-white rounded-3xl p-6 cute-shadow border-2 border-blue-100 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-black px-3 py-1 rounded-full">探索卡片一</span>
+                            <span class="text-xl">📐</span>
+                        </div>
+                        <h3 class="text-xl font-black text-blue-900 mb-1">銳角探索</h3>
+                        <p class="text-xs text-gray-500 mb-4">夾角小於 90° 時，第三邊隨角度變化的奧妙。</p>
+                        
+                        <!-- Slider -->
+                        <div class="bg-blue-50 p-4 rounded-2xl mb-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="sliderAcute" class="text-sm font-bold text-blue-900">夾角 $\theta$:</label>
+                                <span id="labelAcute" class="font-black text-blue-700 text-lg">45°</span>
+                            </div>
+                            <input type="range" id="sliderAcute" min="20" max="89" step="1" value="45" oninput="drawExplore('acute')" class="w-full cursor-pointer">
+                        </div>
+
+                        <!-- Canvas -->
+                        <div class="relative w-full aspect-[4/3] bg-blue-50/50 rounded-2xl border-2 border-dashed border-blue-200 overflow-hidden flex items-center justify-center">
+                            <canvas id="canvasAcute" class="w-full h-full"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 bg-blue-50/80 p-3 rounded-xl text-xs text-blue-900 font-medium text-center">
+                        💡 提示：在銳角範圍內，夾角愈大，對應的第三邊就愈長！
+                    </div>
+                </div>
+
+                <!-- Card 2: Full Triangular Match (Hinge & Side-Angle Relationship) -->
+                <div class="bg-white rounded-3xl p-6 cute-shadow border-2 border-amber-300 flex flex-col justify-between ring-4 ring-amber-100">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="bg-amber-100 text-amber-900 text-xs font-black px-3 py-1 rounded-full">核心探索區</span>
+                            <span class="text-xl">🦫✨</span>
+                        </div>
+                        <h3 class="text-xl font-black text-amber-900 mb-1">三邊三角大對決</h3>
+                        <p class="text-xs text-gray-500 mb-4">即時呈現三邊長度與三個內角的數值關係。</p>
+                        
+                        <!-- Slider -->
+                        <div class="bg-amber-50 p-4 rounded-2xl mb-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="sliderMain" class="text-sm font-bold text-amber-900">夾角 $\theta$ (15°~165°):</label>
+                                <span id="labelMain" class="font-black text-amber-700 text-lg">60°</span>
+                            </div>
+                            <input type="range" id="sliderMain" min="15" max="165" step="1" value="60" oninput="drawExplore('main')" class="w-full cursor-pointer">
+                        </div>
+
+                        <!-- Canvas -->
+                        <div class="relative w-full aspect-[4/3] bg-amber-50/40 rounded-2xl border-2 border-amber-200 overflow-hidden flex items-center justify-center">
+                            <canvas id="canvasMain" class="w-full h-full"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Data panel -->
+                    <div class="mt-4 bg-amber-50 p-3.5 rounded-2xl border border-amber-200">
+                        <div class="grid grid-cols-3 gap-2 text-center text-xs mb-2">
+                            <div class="bg-white p-1.5 rounded-xl shadow-sm">
+                                <span class="text-gray-500 block">邊 a, b, c</span>
+                                <span id="textSides" class="font-black text-amber-800 text-sm">4, 5, 4.4</span>
+                            </div>
+                            <div class="bg-white p-1.5 rounded-xl shadow-sm">
+                                <span class="text-gray-500 block">三內角</span>
+                                <span id="textAngles" class="font-black text-amber-800 text-sm">60°, 72°, 48°</span>
+                            </div>
+                            <div class="bg-white p-1.5 rounded-xl shadow-sm">
+                                <span class="text-gray-500 block">最大角對應</span>
+                                <span id="textMaxPair" class="font-black text-orange-600 text-xs">邊最大 ⟷ 角最大</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-amber-900 font-bold text-center">💡 最大的角所對應的邊，也是最長的一條邊喔！</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Obtuse Exploration -->
+                <div class="bg-white rounded-3xl p-6 cute-shadow border-2 border-purple-100 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="bg-purple-100 text-purple-800 text-xs font-black px-3 py-1 rounded-full">探索卡片二</span>
+                            <span class="text-xl">📐</span>
+                        </div>
+                        <h3 class="text-xl font-black text-purple-900 mb-1">鈍角探索</h3>
+                        <p class="text-xs text-gray-500 mb-4">夾角大於 90° 時，第三邊伸展的極限與特性。</p>
+                        
+                        <!-- Slider -->
+                        <div class="bg-purple-50 p-4 rounded-2xl mb-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="sliderObtuse" class="text-sm font-bold text-purple-900">夾角 $\theta$:</label>
+                                <span id="labelObtuse" class="font-black text-purple-700 text-lg">120°</span>
+                            </div>
+                            <input type="range" id="sliderObtuse" min="91" max="165" step="1" value="120" oninput="drawExplore('obtuse')" class="w-full cursor-pointer">
+                        </div>
+
+                        <!-- Canvas -->
+                        <div class="relative w-full aspect-[4/3] bg-purple-50/50 rounded-2xl border-2 border-dashed border-purple-200 overflow-hidden flex items-center justify-center">
+                            <canvas id="canvasObtuse" class="w-full h-full"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 bg-purple-50/80 p-3 rounded-xl text-xs text-purple-900 font-medium text-center">
+                        💡 提示：鈍角愈大，張開得更開，第三邊就會變得更長！
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== GAME CHALLENGE MODE ==================== -->
+        <section id="gameSection" class="w-full flex-col gap-6 hidden">
+            
+            <!-- Task Prompt Banner -->
+            <div class="bg-white rounded-3xl p-6 cute-shadow border-2 border-amber-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="text-4xl bg-amber-100 p-3 rounded-2xl">🦫</div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="gameLevelBadge" class="bg-orange-500 text-white text-xs font-black px-3 py-1 rounded-full">第一關：樞紐定理挑戰</span>
+                            <span id="gameScore" class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">得分: 0</span>
+                        </div>
+                        <h2 id="gamePromptText" class="text-lg md:text-xl font-black text-amber-900 mt-1">
+                            水豚老師問：這裡有兩個三角形。哪一個三角形的紅色第三邊比較長呢？
+                        </h2>
+                    </div>
+                </div>
+                <button onclick="initGameRound()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-4 py-2 rounded-xl text-sm transition-all duration-200 flex items-center gap-2">
+                    🔄 換一題
+                </button>
+            </div>
+
+            <!-- Game Canvas Area -->
+            <div class="bg-white rounded-3xl p-6 cute-shadow border-2 border-amber-200 flex flex-col items-center relative overflow-hidden">
+                <div class="w-full max-w-4xl aspect-[16/9] bg-amber-50/30 rounded-2xl border-2 border-dashed border-amber-200 relative flex items-center justify-center overflow-hidden">
+                    <canvas id="canvasGame" class="w-full h-full cursor-pointer"></canvas>
+                </div>
+                <!-- Interactive Action Buttons below Canvas -->
+                <div id="gameButtonArea" class="mt-6 flex flex-wrap gap-4 justify-center w-full">
+                    <!-- Dynamically populated options -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Feedback Modal Overlay -->
+    <div id="feedbackModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div id="modalContainer" class="bg-white rounded-3xl p-8 max-w-md w-full cute-shadow border-4 border-emerald-400 text-center transform scale-95 transition-transform duration-300">
+            <div id="modalIcon" class="text-6xl mb-3">🎉</div>
+            <h3 id="modalTitle" class="text-2xl font-black text-emerald-700 mb-2">答對了！太棒囉！</h3>
+            <p id="modalDesc" class="text-gray-600 text-sm mb-6">你已經抓到樞紐定理的精髓了！大角度對應大邊長！</p>
+            <button id="modalActionBtn" onclick="closeModalAndNext()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 px-6 rounded-2xl shadow-lg transition-all duration-200 text-lg">
+                挑戰下一關
+            </button>
+        </div>
+    </div>
+
+    <footer class="w-full max-w-7xl mx-auto mt-8 text-center text-xs text-gray-400">
+        <p>© 2026 水豚老師數學互動教室 • 樞紐定理與大邊對大角教材</p>
+    </footer>
+
+    <script>
+        let currentMode = 'explore';
+        
+        // Global Explore parameters
+        let globalA = 4;
+        let globalB = 5;
+
+        // Game State variables
+        let gameStage = 1; // 1: Hinge Theorem (Two triangles), 2: Side-Angle Relationship (Single triangle)
+        let gameScore = 0;
+        let currentGameData = {};
+
+        // Switch modes function
+        function switchMode(mode) {
+            currentMode = mode;
+            const exploreSec = document.getElementById('exploreSection');
+            const gameSec = document.getElementById('gameSection');
+            const btnExplore = document.getElementById('btnExplore');
+            const btnGame = document.getElementById('btnGame');
+
+            if (mode === 'explore') {
+                exploreSec.classList.remove('hidden');
+                exploreSec.classList.add('flex');
+                gameSec.classList.add('hidden');
+                gameSec.classList.remove('flex');
+                
+                btnExplore.className = "flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-base transition-all duration-300 bg-white text-amber-700 shadow-md";
+                btnGame.className = "flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-base transition-all duration-300 text-white hover:bg-white/20";
+                
+                // Redraw all explore canvases
+                setTimeout(renderAllExplore, 50);
+            } else {
+                gameSec.classList.remove('hidden');
+                gameSec.classList.add('flex');
+                exploreSec.classList.add('hidden');
+                exploreSec.classList.remove('flex');
+                
+                btnGame.className = "flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-base transition-all duration-300 bg-white text-amber-700 shadow-md";
+                btnExplore.className = "flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-base transition-all duration-300 text-white hover:bg-white/20";
+                
+                initGameRound();
+            }
+        }
+
+        function updateGlobalSides() {
+            globalA = parseInt(document.getElementById('inputA').value);
+            globalB = parseInt(document.getElementById('inputB').value);
+            document.getElementById('valA').innerText = globalA;
+            document.getElementById('valB').innerText = globalB;
+            renderAllExplore();
+        }
+
+        function renderAllExplore() {
+            drawExplore('acute');
+            drawExplore('main');
+            drawExplore('obtuse');
+        }
+
+        window.addEventListener('resize', () => {
+            if (currentMode === 'explore') {
+                renderAllExplore();
+            } else {
+                renderGameCanvas();
+            }
+        });
+
+        window.onload = function() {
+            renderAllExplore();
+        };
+
+        function setupCanvasSize(canvas) {
+            const rect = canvas.getBoundingClientRect();
+            if (canvas.width !== rect.width || canvas.height !== rect.height) {
+                canvas.width = rect.width * window.devicePixelRatio;
+                canvas.height = rect.height * window.devicePixelRatio;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            }
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, rect.width, rect.height);
+            return { ctx, width: rect.width, height: rect.height };
+        }
+
+        // Draw a triangle given vertices and options
+        function drawTriangleObject(ctx, w, h, side1, side2, angleDeg, options = {}) {
+            const rad = angleDeg * Math.PI / 180;
+            // Vertex A at origin (translated later)
+            // Let vertex B be at (side1, 0) along x-axis
+            // Vertex C at (side2 * cos(rad), -side2 * sin(rad))
+            const bx = side1;
+            const by = 0;
+            const cx = side2 * Math.cos(rad);
+            const cy = -side2 * Math.sin(rad);
+
+            const pts = [
+                { x: 0, y: 0 },
+                { x: bx, y: by },
+                { x: cx, y: cy }
+            ];
+
+            // Compute bounding box
+            let minX = Math.min(...pts.map(p => p.x));
+            let maxX = Math.max(...pts.map(p => p.x));
+            let minY = Math.min(...pts.map(p => p.y));
+            let maxY = Math.max(...pts.map(p => p.y));
+
+            const tWidth = maxX - minX;
+            const tHeight = maxY - minY;
+
+            const padding = 50;
+            const availW = w - padding * 2;
+            const availH = h - padding * 2;
+
+            let scale = Math.min(availW / Math.max(tWidth, 1), availH / Math.max(tHeight, 1));
+            scale = Math.min(scale, 45); // max scale cap
+
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
+
+            const offsetX = w / 2 - centerX * scale;
+            const offsetY = h / 2 - centerY * scale;
+
+            // Transform function
+            const tx = (p) => p.x * scale + offsetX;
+            const ty = (p) => p.y * scale + offsetY;
+
+            const p0 = { x: tx(pts[0]), y: ty(pts[0]) };
+            const p1 = { x: tx(pts[1]), y: ty(pts[1]) };
+            const p2 = { x: tx(pts[2]), y: ty(pts[2]) };
+
+            // Calculate 3 side lengths
+            const lenA = Math.hypot(p1.x - p2.x, p1.y - p2.y) / scale; // side opposite to angle A (between p1 and p2)
+            const lenB = side2; // side 2
+            const lenC = side1; // side 1
+
+            // Calculate all 3 angles using law of cosines
+            // angle at p0 (vertex A) = angleDeg
+            // angle at p1: cos(B) = (side1^2 + lenA^2 - side2^2) / (2 * side1 * lenA)
+            const angleP1 = Math.acos(Math.max(-1, Math.min(1, (side1*side1 + lenA*lenA - side2*side2)/(2 * side1 * lenA)))) * 180 / Math.PI;
+            const angleP2 = 180 - angleDeg - angleP1;
+
+            // Draw Triangle Fill
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            ctx.lineTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.closePath();
+            ctx.fillStyle = options.fillColor || 'rgba(59, 130, 246, 0.1)';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = options.strokeColor || '#2563EB';
+            ctx.stroke();
+
+            // Draw Vertices and labels if requested
+            // Vertex 0 (origin)
+            drawVertexDot(ctx, p0, options.labelA || 'A', options.showAngles ? `${Math.round(angleDeg)}°` : (options.showAngleOnly ? `${Math.round(angleDeg)}°` : ''));
+            // Vertex 1
+            drawVertexDot(ctx, p1, options.labelB || 'B', options.showAngles ? `${Math.round(angleP1)}°` : '');
+            // Vertex 2
+            drawVertexDot(ctx, p2, options.labelC || 'C', options.showAngles ? `${Math.round(angleP2)}°` : '');
+
+            // Draw side lengths if requested
+            if (options.showSides) {
+                // Side opposite to p0 (between p1 and p2)
+                drawSideLabel(ctx, p1, p2, options.sideAName ? `${options.sideAName}=${lenA.toFixed(1)}` : `${lenA.toFixed(1)}`, options.sideAColor || '#374151');
+                // Side opposite to p1 (between p0 and p2)
+                drawSideLabel(ctx, p0, p2, options.sideBName ? `${options.sideBName}=${side2}` : `${side2}`, options.sideBColor || '#374151');
+                // Side opposite to p2 (between p0 and p1)
+                drawSideLabel(ctx, p0, p1, options.sideCName ? `${options.sideCName}=${side1}` : `${side1}`, options.sideCColor || '#374151');
+            } else if (options.thirdSideQuestion) {
+                // Highlight third side in red with question mark
+                drawSideLabel(ctx, p1, p2, 'c = ?', '#EF4444', true);
+                // Known sides
+                drawSideLabel(ctx, p0, p2, `${side2}`, '#374151');
+                drawSideLabel(ctx, p0, p1, `${side1}`, '#374151');
+            }
+
+            return { lenA, angleP1, angleP2 };
+        }
+
+        function drawVertexDot(ctx, pt, name, angleText) {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#D97706';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.stroke();
+
+            ctx.font = 'bold 14px "Noto Sans TC", sans-serif';
+            ctx.fillStyle = '#1F2937';
+            ctx.fillText(name, pt.x + 10, pt.y - 8);
+
+            if (angleText) {
+                ctx.fillStyle = '#D97706';
+                ctx.font = 'bold 13px "Noto Sans TC", sans-serif';
+                ctx.fillText(angleText, pt.x + 10, pt.y + 18);
+            }
+        }
+
+        function drawSideLabel(ctx, pA, pB, text, color, isHighlight = false) {
+            const mx = (pA.x + pB.x) / 2;
+            const my = (pA.y + pB.y) / 2;
+
+            ctx.save();
+            ctx.font = `${isHighlight ? 'bold 16px' : 'bold 13px'} "Noto Sans TC", sans-serif`;
+            const metrics = ctx.measureText(text);
+            const pad = 6;
+
+            ctx.fillStyle = isHighlight ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.85)';
+            ctx.fillRect(mx - metrics.width/2 - pad, my - 10 - pad, metrics.width + pad*2, 20 + pad*2);
+
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, mx, my);
+            ctx.restore();
+        }
+
+        function drawExplore(type) {
+            if (type === 'acute') {
+                const val = parseInt(document.getElementById('sliderAcute').value);
+                document.getElementById('labelAcute').innerText = val + '°';
+                const { ctx, width, height } = setupCanvasSize(document.getElementById('canvasAcute'));
+                drawTriangleObject(ctx, width, height, globalA, globalB, val, {
+                    fillColor: 'rgba(59, 130, 246, 0.12)',
+                    strokeColor: '#3B82F6',
+                    showAngleOnly: true
+                });
+            } else if (type === 'main') {
+                const val = parseInt(document.getElementById('sliderMain').value);
+                document.getElementById('labelMain').innerText = val + '°';
+                const { ctx, width, height } = setupCanvasSize(document.getElementById('canvasMain'));
+                const res = drawTriangleObject(ctx, width, height, globalA, globalB, val, {
+                    fillColor: 'rgba(217, 119, 6, 0.12)',
+                    strokeColor: '#D97706',
+                    showAngles: true,
+                    showSides: true,
+                    sideAName: 'a',
+                    sideBName: 'b',
+                    sideCName: 'c'
+                });
+
+                // Update text panel
+                document.getElementById('textSides').innerText = `${globalA}, ${globalB}, ${res.lenA.toFixed(1)}`;
+                document.getElementById('textAngles').innerText = `${val}°, ${Math.round(res.angleP1)}°, ${Math.round(res.angleP2)}°`;
+            } else if (type === 'obtuse') {
+                const val = parseInt(document.getElementById('sliderObtuse').value);
+                document.getElementById('labelObtuse').innerText = val + '°';
+                const { ctx, width, height } = setupCanvasSize(document.getElementById('canvasObtuse'));
+                drawTriangleObject(ctx, width, height, globalA, globalB, val, {
+                    fillColor: 'rgba(147, 51, 234, 0.12)',
+                    strokeColor: '#9333EA',
+                    showAngleOnly: true
+                });
+            }
+        }
+
+        function initGameRound() {
+            // STRICTLY cycle between Stage 1 and Stage 2 sequentially: 1 -> 2 -> 1 -> 2...
+            // If gameStage was 1, next is 2. If 2, next is 1.
+            // On first load or restart after stage 2, gameStage toggles.
+            
+            const badge = document.getElementById('gameLevelBadge');
+            const prompt = document.getElementById('gamePromptText');
+            const btnArea = document.getElementById('gameButtonArea');
+            btnArea.innerHTML = '';
+
+            if (gameStage === 1) {
+                badge.innerText = "第一關：夾角比邊長（樞紐定理）";
+                badge.className = "bg-orange-500 text-white text-xs font-black px-3 py-1 rounded-full";
+                prompt.innerText = "🦫 水豚老師問：這裡有兩個三角形。哪一個三角形的紅色第三邊比較長呢？";
+
+                // Generate two triangles with same two sides, different angles
+                const side1 = Math.floor(Math.random() * 3) + 4; // 4, 5, 6
+                const side2 = Math.floor(Math.random() * 3) + 5; // 5, 6, 7
+                
+                let angleA = Math.floor(Math.random() * 50) + 30; // 30 ~ 80
+                let angleB = Math.floor(Math.random() * 50) + 90; // 90 ~ 140
+                if (Math.random() < 0.5) {
+                    let temp = angleA; angleA = angleB; angleB = temp;
+                }
+
+                const correctAnswer = angleA > angleB ? 'A' : 'B';
+                currentGameData = { stage: 1, side1, side2, angleA, angleB, correctAnswer };
+
+                const btnA = document.createElement('button');
+                btnA.className = "px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg text-lg transition-all transform hover:-translate-y-0.5";
+                btnA.innerText = "👉 左邊三角形 A 比較長";
+                btnA.onclick = () => checkGameAnswer('A');
+
+                const btnB = document.createElement('button');
+                btnB.className = "px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-2xl shadow-lg text-lg transition-all transform hover:-translate-y-0.5";
+                btnB.innerText = "👉 右邊三角形 B 比較長";
+                btnB.onclick = () => checkGameAnswer('B');
+
+                btnArea.appendChild(btnA);
+                btnArea.appendChild(btnB);
+
+            } else {
+                badge.innerText = "第二關：邊長找最大角（大邊對大角）";
+                badge.className = "bg-emerald-600 text-white text-xs font-black px-3 py-1 rounded-full";
+                prompt.innerText = "🦫 水豚老師問：已知這三條邊的長度，請利用『大邊對大角』的秘訣，找出哪一個角最大？";
+
+                // Generate 3 distinct side lengths ensuring a valid triangle
+                // To randomize which side is the longest and correspond to A, B, or C completely unbiased:
+                // Let's pick 3 base lengths that form a valid triangle e.g. [5, 7, 9]
+                let basePools = [
+                    [5, 7, 9],
+                    [6, 8, 10],
+                    [4, 7, 9],
+                    [6, 7, 8],
+                    [5, 8, 11]
+                ];
+                let chosenPool = basePools[Math.floor(Math.random() * basePools.length)];
+                
+                // Shuffle the pool so the largest number is at any random index (0, 1, or 2)
+                // e.g. if chosenPool is [5, 7, 9], max is 9 at index 2. Let's shuffle the array randomly:
+                let shuffledValues = [...chosenPool];
+                // Fisher-Yates shuffle
+                for (let i = shuffledValues.length - 1; i > 0; i--) {
+                    let j = Math.floor(Math.random() * (i + 1));
+                    [shuffledValues[i], shuffledValues[j]] = [shuffledValues[j], shuffledValues[i]];
+                }
+
+                // Ensure triangle inequality: sum of any two > third
+                if (shuffledValues[0] + shuffledValues[1] <= shuffledValues[2]) {
+                    // Fix by making index 2 smaller or index 0/1 larger
+                    let maxIdx = shuffledValues.indexOf(Math.max(...shuffledValues));
+                    // swap max to index 0 or 1 and reduce it slightly or adjust
+                    let temp = shuffledValues[maxIdx];
+                    shuffledValues[maxIdx] = shuffledValues[0];
+                    shuffledValues[0] = temp;
+                }
+                // Re-verify triangle inequality strictly
+                let sA = shuffledValues[0]; // side opposite to A
+                let sB = shuffledValues[1]; // side opposite to B
+                let sC = shuffledValues[2]; // side opposite to C
+
+                // If triangle inequality fails (a + b <= c etc.), fallback to safe valid lengths with random permutation
+                if (sA + sB <= sC || sA + sC <= sB || sB + sC <= sA) {
+                    sA = 6; sB = 7; sC = 8;
+                    // shuffle sA, sB, sC assignments
+                    let arr = [sA, sB, sC];
+                    arr.sort(() => Math.random() - 0.5);
+                    sA = arr[0]; sB = arr[1]; sC = arr[2];
+                }
+
+                // Determine which side is the longest
+                let maxSide = Math.max(sA, sB, sC);
+                let correctAnswer = '';
+                if (maxSide === sA) correctAnswer = 'A';
+                else if (maxSide === sB) correctAnswer = 'B';
+                else correctAnswer = 'C';
+
+                currentGameData = { stage: 2, sA, sB, sC, correctAnswer };
+
+                // Create buttons for ∠A, ∠B, ∠C in random or fixed order (fixed A, B, C is fine as long as correct answer is randomized)
+                ['A', 'B', 'C'].forEach(angleName => {
+                    const btn = document.createElement('button');
+                    btn.className = "px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-2xl shadow-lg text-lg transition-all transform hover:-translate-y-0.5";
+                    btn.innerText = `🎯 最大的角是 ∠${angleName}`;
+                    btn.onclick = () => checkGameAnswer(angleName);
+                    btnArea.appendChild(btn);
+                });
+            }
+
+            renderGameCanvas();
+        }
+
+        function renderGameCanvas() {
+            const canvas = document.getElementById('canvasGame');
+            const { ctx, width, height } = setupCanvasSize(canvas);
+
+            if (gameStage === 1) {
+                ctx.save();
+                ctx.translate(width * 0.25, height * 0.5);
+                drawGameTrianglePair(ctx, width * 0.4, height * 0.8, currentGameData.side1, currentGameData.side2, currentGameData.angleA, '三角形 A');
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(width * 0.75, height * 0.5);
+                drawGameTrianglePair(ctx, width * 0.4, height * 0.8, currentGameData.side1, currentGameData.side2, currentGameData.angleB, '三角形 B');
+                ctx.restore();
+
+            } else {
+                ctx.save();
+                ctx.translate(width * 0.5, height * 0.5);
+                drawGameSingleTriangleAccurate(ctx, width * 0.6, height * 0.8, currentGameData.sA, currentGameData.sB, currentGameData.sC);
+                ctx.restore();
+            }
+        }
+
+        function drawGameTrianglePair(ctx, maxW, maxH, s1, s2, angleDeg, label) {
+            const rad = angleDeg * Math.PI / 180;
+            const bx = s1 * 25;
+            const by = 0;
+            const cx = s2 * 25 * Math.cos(rad);
+            const cy = -s2 * 25 * Math.sin(rad);
+
+            const pts = [{x:0, y:0}, {x:bx, y:by}, {x:cx, y:cy}];
+            
+            // Center shift
+            const cxMid = (0 + bx + cx) / 3;
+            const cyMid = (0 + by + cy) / 3;
+
+            ctx.beginPath();
+            ctx.moveTo(-cxMid, -cyMid);
+            ctx.lineTo(bx - cxMid, by - cyMid);
+            ctx.lineTo(cx - cxMid, cy - cyMid);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(217, 119, 6, 0.1)';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#D97706';
+            ctx.stroke();
+
+            // Label title
+            ctx.font = 'bold 16px "Noto Sans TC", sans-serif';
+            ctx.fillStyle = '#9A3412';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, 0, -maxH/2 + 20);
+
+            // Angle arc & text
+            ctx.fillStyle = '#D97706';
+            ctx.font = 'bold 14px "Noto Sans TC", sans-serif';
+            ctx.fillText(`夾角: ${angleDeg}°`, -cxMid + 25, -cyMid + 25);
+
+            // Third side highlighted in red question mark
+            const p1 = { x: bx - cxMid, y: by - cyMid };
+            const p2 = { x: cx - cxMid, y: cy - cyMid };
+            const mx = (p1.x + p2.x) / 2;
+            const my = (p1.y + p2.y) / 2;
+
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+            ctx.beginPath();
+            ctx.arc(mx, my, 22, 0, 2*Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#EF4444';
+            ctx.font = 'bold 16px "Noto Sans TC", sans-serif';
+            ctx.fillText('c = ?', mx, my - 5);
+        }
+
+        function drawGameSingleTriangleAccurate(ctx, maxW, maxH, sideA, sideB, sideC) {
+            // sideA is opposite to Vertex A (between B and C)
+            // sideB is opposite to Vertex B (between A and C)
+            // sideC is opposite to Vertex C (between A and B)
+            
+            // Using Law of Cosines to calculate vertex coordinates precisely
+            // Let Vertex B be at origin (0,0)
+            // Let Vertex C be at (sideC * scaleFactor, 0) along x-axis
+            const scaleFactor = 28;
+            const cLen = sideC * scaleFactor;
+            const aLen = sideA * scaleFactor;
+            const bLen = sideB * scaleFactor;
+
+            // Angle at B (cosB) = (a^2 + c^2 - b^2) / (2 * a * c) -> wait, side opposite to B is b.
+            // In triangle ABC with vertices A, B, C:
+            // side opposite to A is a (BC)
+            // side opposite to B is b (AC)
+            // side opposite to C is c (AB)
+            // Let's place Vertex B at origin (0,0), and Vertex C along x-axis at (cLen, 0). Here side AB is length c.
+            // Actually, let's use standard coordinates:
+            // Vertex B = (0, 0)
+            // Vertex C = (aLen, 0) where BC is side a.
+            // Vertex A position (x, y) such that AB = side c and AC = side b.
+            // cos(B) = (a^2 + c^2 - b^2) / (2 * a * c)
+            const cosB = (aLen*aLen + cLen*cLen - bLen*bLen) / (2 * aLen * cLen);
+            const angleB = Math.acos(Math.max(-1, Math.min(1, cosB)));
+
+            const bx = 0, by = 0;
+            const cx = aLen, cy = 0;
+            const ax = cLen * Math.cos(angleB);
+            const ay = -cLen * Math.sin(angleB);
+
+            const pB = { x: bx, y: by };
+            const pC = { x: cx, y: cy };
+            const pA = { x: ax, y: ay };
+
+            // Center offset
+            const midX = (pA.x + pB.x + pC.x) / 3;
+            const midY = (pA.y + pB.y + pC.y) / 3;
+
+            const tpA = { x: pA.x - midX, y: pA.y - midY };
+            const tpB = { x: pB.x - midX, y: pB.y - midY };
+            const tpC = { x: pC.x - midX, y: pC.y - midY };
+
+            // Draw triangle
+            ctx.beginPath();
+            ctx.moveTo(tpA.x, tpA.y);
+            ctx.lineTo(tpB.x, tpB.y);
+            ctx.lineTo(tpC.x, tpC.y);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#059669';
+            ctx.stroke();
+
+            // Draw Vertices A, B, C (NO angles)
+            drawGameVertexOnly(ctx, tpA, '頂點 A');
+            drawGameVertexOnly(ctx, tpB, '頂點 B');
+            drawGameVertexOnly(ctx, tpC, '頂點 C');
+
+            // Draw side lengths:
+            // side a is BC (between tpB and tpC)
+            // side b is AC (between tpA and tpC)
+            // side c is AB (between tpA and tpB)
+            drawSideLabelGame(ctx, tpB, tpC, `a = ${sideA}`, '#047857');
+            drawSideLabelGame(ctx, tpA, tpC, `b = ${sideB}`, '#047857');
+            drawSideLabelGame(ctx, tpA, tpB, `c = ${sideC}`, '#047857');
+        }
+
+        function drawGameVertexOnly(ctx, pt, name) {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = '#059669';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.stroke();
+
+            ctx.font = 'bold 15px "Noto Sans TC", sans-serif';
+            ctx.fillStyle = '#065F46';
+            ctx.fillText(name, pt.x + 12, pt.y - 5);
+        }
+
+        function drawSideLabelGame(ctx, pA, pB, text, color) {
+            const mx = (pA.x + pB.x) / 2;
+            const my = (pA.y + pB.y) / 2;
+
+            ctx.save();
+            ctx.font = 'bold 15px "Noto Sans TC", sans-serif';
+            const metrics = ctx.measureText(text);
+            const pad = 6;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(mx - metrics.width/2 - pad, my - 10 - pad, metrics.width + pad*2, 20 + pad*2);
+
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, mx, my);
+            ctx.restore();
+        }
+
+        function checkGameAnswer(userChoice) {
+            const isCorrect = userChoice === currentGameData.correctAnswer;
+            
+            const modal = document.getElementById('feedbackModal');
+            const container = document.getElementById('modalContainer');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const desc = document.getElementById('modalDesc');
+            const btn = document.getElementById('modalActionBtn');
+
+            modal.classList.remove('hidden');
+            
+            if (isCorrect) {
+                gameScore += 10;
+                document.getElementById('gameScore').innerText = `得分: ${gameScore}`;
+                
+                container.className = "bg-white rounded-3xl p-8 max-w-md w-full cute-shadow border-4 border-emerald-400 text-center transform scale-100 transition-transform duration-300";
+                icon.innerText = "🎉";
+                title.innerText = "答對了！太神啦！";
+                title.className = "text-2xl font-black text-emerald-700 mb-2";
+                
+                if (gameStage === 1) {
+                    desc.innerText = "答對了！夾角愈大，對應的第三邊就愈長，這就是『樞紐定理』的精髓！";
+                    btn.innerText = "挑戰第二關";
+                    btn.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 px-6 rounded-2xl shadow-lg transition-all duration-200 text-lg";
+                } else {
+                    desc.innerText = "答對了！最長的邊對應到最大的角，這就是『大邊對大角』的奧妙！";
+                    btn.innerText = "再玩一題 (回到第一關)";
+                    btn.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 px-6 rounded-2xl shadow-lg transition-all duration-200 text-lg";
+                }
+                currentGameData.status = 'correct';
+            } else {
+                container.className = "bg-white rounded-3xl p-8 max-w-md w-full cute-shadow border-4 border-rose-400 text-center transform scale-100 transition-transform duration-300";
+                icon.innerText = "🧐";
+                title.innerText = "哎呀！再想一想喔！";
+                title.className = "text-2xl font-black text-rose-700 mb-2";
+                
+                if (gameStage === 1) {
+                    desc.innerText = "水豚老師提示：請仔細比較兩個三角形的『夾角大小』，夾角張得愈開，對面的邊就愈長喔！";
+                } else {
+                    desc.innerText = "水豚老師提示：請找出三條邊裡面『數字最大』的那一條邊，它對面所夾的角度就是最大的！";
+                }
+                btn.innerText = "再試一次";
+                btn.className = "w-full bg-rose-500 hover:bg-rose-600 text-white font-black py-3 px-6 rounded-2xl shadow-lg transition-all duration-200 text-lg";
+                currentGameData.status = 'incorrect';
+            }
+        }
+
+        function closeModalAndNext() {
+            const modal = document.getElementById('feedbackModal');
+            modal.classList.add('hidden');
+
+            if (currentGameData.status === 'correct') {
+                // Toggle game stage for strict sequence: 1 -> 2 -> 1 -> 2 ...
+                gameStage = gameStage === 1 ? 2 : 1;
+                initGameRound();
+            }
+        }
+    </script>
+</body>
+</html>
