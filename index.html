@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📐 樞紐定理互動探索</title>
+  <style>
+    /* ===== 全局與重置樣式 ===== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'LiHei Pro', '微軟正黑體', sans-serif;
+      background-color: #f4f7f6;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* ===== 頂部標題與切換區 ===== */
+    header {
+      background-color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    h1 {
+      font-size: 28px;
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #e0e6ed;
+      color: #5a6c7d;
+      transition: all 0.3s ease;
+    }
+    .tab-btn:hover {
+      background-color: #d1d9e2;
+    }
+    .tab-btn.active {
+      background-color: #4CAF50;
+      color: white;
+      box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3);
+    }
+
+    /* ===== 內容區底層 ===== */
+    main {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .mode-section {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+    .mode-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== 三視角教學模式 ===== */
+    .control-panel {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .input-group label {
+      font-weight: bold;
+      color: #0066cc;
+      font-size: 18px;
+    }
+    .input-group input {
+      width: 80px;
+      padding: 8px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      text-align: center;
+    }
+    
+    .cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1 1 320px;
+      max-width: 360px;
+    }
+    canvas {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-top: 15px;
+      width: 100%;
+      height: 240px;
+    }
+    
+    /* ===== 滑桿與資訊顯示 ===== */
+    .slider-container {
+      width: 100%;
+      margin: 15px 0;
+    }
+    .slider-container input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+    .info-text {
+      font-size: 18px;
+      text-align: center;
+      width: 100%;
+      margin-bottom: 5px;
+      line-height: 1.8;
+    }
+    .info-text span.angle-val {
+      font-weight: bold;
+      color: #e67e22;
+      font-size: 20px;
+    }
+    .info-text span.c-val {
+      font-weight: bold;
+      color: #ff3333;
+      font-size: 20px;
+    }
+
+    /* ===== 水豚老師挑戰模式 ===== */
+    #mode-challenge .challenge-layout {
+      max-width: 900px;
+      margin: 0 auto;
+      background: transparent;
+      position: relative;
+    }
+    .task-panel {
+      background: #fff3e0;
+      border-left: 6px solid #ff9800;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .task-panel h3 {
+      color: #e65100;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    .task-panel p {
+      font-size: 20px;
+      color: #333;
+    }
+    
+    /* 挑戰卡片特製樣式 */
+    .challenge-card {
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .challenge-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      border-color: #ff9800;
+    }
+    .challenge-badge {
+      display: inline-block;
+      background: #34495e;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .select-btn {
+      margin-top: 15px;
+      padding: 10px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .challenge-card:hover .select-btn {
+      background-color: #e65100;
+    }
+
+    /* 答錯搖晃動畫 */
+    .shake {
+      animation: shake 0.5s;
+      border-color: #f44336 !important;
+    }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-10px); }
+      80% { transform: translateX(10px); }
+      100% { transform: translateX(0); }
+    }
+    
+    /* ===== 過關彈出視窗 ===== */
+    .overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.9);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(4px);
+    }
+    .overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .success-msg {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2e7d32;
+      text-align: center;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    .success-sub {
+      font-size: 20px;
+      color: #555;
+      margin-bottom: 25px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .next-btn {
+      padding: 12px 30px;
+      font-size: 20px;
+      font-weight: bold;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3);
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .next-btn:hover {
+      background-color: #388e3c;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部標題與切換區 -->
+  <header>
+    <h1>📐 樞紐定理互動探索</h1>
+    <div class="tabs">
+      <button id="tab-teaching" class="tab-btn active" onclick="switchTab('teaching')">三視角教學模式</button>
+      <button id="tab-challenge" class="tab-btn" onclick="switchTab('challenge')">水豚老師挑戰模式 🎮</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================== 三視角教學模式 ================== -->
+    <div id="mode-teaching" class="mode-section active">
+      <div class="control-panel">
+        <div class="input-group">
+          <label for="side-a">固定邊長 a (藍)：</label>
+          <input type="number" id="side-a" value="4" min="1" max="20" step="0.5">
+        </div>
+        <div class="input-group">
+          <label for="side-b">固定邊長 b (藍)：</label>
+          <input type="number" id="side-b" value="5" min="1" max="20" step="0.5">
+        </div>
+      </div>
+
+      <div class="cards-container">
+        <!-- 卡片 1 -->
+        <div class="card">
+          <div class="info-text">
+            夾角 θ：<span id="angle-val-1" class="angle-val">30°</span><br>
+            第三邊 c = <span id="c-val-1" class="c-val">--</span>
+          </div>
+          <div class="slider-container">
+            <input type="range" id="slider-1" min="10" max="170" value="30">
+          </div>
+          <canvas id="canvas-1" width="320" height="240"></canvas>
+        </div>
+
+        <!-- 卡片 2 -->
+        <div class="card">
+          <div class="info-text">
+            夾角 θ：<span id="angle-val-2" class="angle-val">90°</span><br>
+            第三邊 c = <span id="c-val-2" class="c-val">--</span>
+          </div>
+          <div class="slider-container">
+            <input type="range" id="slider-2" min="10" max="170" value="90">
+          </div>
+          <canvas id="canvas-2" width="320" height="240"></canvas>
+        </div>
+
+        <!-- 卡片 3 -->
+        <div class="card">
+          <div class="info-text">
+            夾角 θ：<span id="angle-val-3" class="angle-val">150°</span><br>
+            第三邊 c = <span id="c-val-3" class="c-val">--</span>
+          </div>
+          <div class="slider-container">
+            <input type="range" id="slider-3" min="10" max="170" value="150">
+          </div>
+          <canvas id="canvas-3" width="320" height="240"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================== 水豚老師挑戰模式 (大小判斷) ================== -->
+    <div id="mode-challenge" class="mode-section">
+      <div class="challenge-layout">
+        <div class="task-panel">
+          <h3>🎯 挑戰任務：大小比一比！</h3>
+          <p id="chal-question-text">載入題目中...</p>
+        </div>
+        
+        <div class="cards-container">
+          <!-- 選項 A -->
+          <div id="card-A" class="card challenge-card" onclick="checkAnswer('A')">
+            <div class="info-text">
+              <span class="challenge-badge">左邊 (A)</span><br>
+              夾角 θ：<span id="chal-angle-A" class="angle-val">--</span><br>
+              第三邊 c：<span id="chal-c-A" class="c-val">--</span>
+            </div>
+            <canvas id="canvas-chal-A" width="320" height="240"></canvas>
+            <button class="select-btn">選我！</button>
+          </div>
+
+          <!-- 選項 B -->
+          <div id="card-B" class="card challenge-card" onclick="checkAnswer('B')">
+            <div class="info-text">
+              <span class="challenge-badge">右邊 (B)</span><br>
+              夾角 θ：<span id="chal-angle-B" class="angle-val">--</span><br>
+              第三邊 c：<span id="chal-c-B" class="c-val">--</span>
+            </div>
+            <canvas id="canvas-chal-B" width="320" height="240"></canvas>
+            <button class="select-btn">選我！</button>
+          </div>
+        </div>
+
+        <!-- 過關重疊視窗 -->
+        <div id="success-overlay" class="overlay">
+          <div class="success-msg">🦫 水豚老師：太棒了！答對囉！</div>
+          <div class="success-sub">記住口訣：<br><b>「大角對大邊，小角對小邊！」</b><br>只要固定的兩邊一樣長，夾角越開，第三邊就越長喔！</div>
+          <button class="next-btn" onclick="initChallengeMode()">挑戰下一題</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ===== 工具函式：計算餘弦定理 =====
+    function calculateC(a, b, angleDeg) {
+      const angleRad = angleDeg * Math.PI / 180;
+      return Math.sqrt(a * a + b * b - 2 * a * b * Math.cos(angleRad));
+    }
+
+    // ===== 核心繪圖函式 (支援隱藏文字與符號) =====
+    function drawTriangle(canvasId, a, b, angleDeg, hideAngle = false, hideC = false) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const cw = canvas.width;
+      const ch = canvas.height;
+      
+      ctx.clearRect(0, 0, cw, ch);
+      
+      const angleRad = angleDeg * Math.PI / 180;
+      const c = calculateC(a, b, angleDeg);
+
+      // 計算縮放比例
+      const padding = 60;
+      const maxSpan = a + b;
+      const scale = Math.min(cw - padding, ch - padding) / maxSpan;
+
+      // 計算原始座標
+      const Ax = 0;
+      const Ay = 0;
+      const Bx = a;
+      const By = 0;
+      const Cx = b * Math.cos(angleRad);
+      const Cy = -b * Math.sin(angleRad);
+
+      const centroidX = (Ax + Bx + Cx) / 3;
+      const centroidY = (Ay + By + Cy) / 3;
+      
+      ctx.save();
+      ctx.translate(cw / 2 - centroidX * scale, ch / 2 - centroidY * scale);
+
+      const sAx = Ax * scale;
+      const sAy = Ay * scale;
+      const sBx = Bx * scale;
+      const sBy = By * scale;
+      const sCx = Cx * scale;
+      const sCy = Cy * scale;
+
+      // 1. 畫夾角弧線與文字
+      ctx.beginPath();
+      ctx.arc(sAx, sAy, 25, 0, -angleRad, true); 
+      ctx.strokeStyle = '#f39c12';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      ctx.fillStyle = hideAngle ? '#d35400' : '#f39c12';
+      ctx.font = hideAngle ? 'bold 20px sans-serif' : '16px sans-serif';
+      const angleLabel = hideAngle ? '?' : 'θ';
+      ctx.fillText(angleLabel, sAx + 35 * Math.cos(-angleRad/2), sAy + 35 * Math.sin(-angleRad/2) + 5);
+
+      // 2. 畫固定邊 a (藍色實線)
+      ctx.beginPath();
+      ctx.moveTo(sAx, sAy);
+      ctx.lineTo(sBx, sBy);
+      ctx.strokeStyle = '#0066cc';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.setLineDash([]);
+      ctx.stroke();
+      
+      // 3. 畫固定邊 b (藍色實線)
+      ctx.beginPath();
+      ctx.moveTo(sAx, sAy);
+      ctx.lineTo(sCx, sCy);
+      ctx.stroke();
+      
+      // 4. 畫變動邊 c (紅色虛線)
+      ctx.beginPath();
+      ctx.moveTo(sBx, sBy);
+      ctx.lineTo(sCx, sCy);
+      ctx.strokeStyle = '#ff3333';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 6]);
+      ctx.stroke();
+
+      // 標示 c
+      ctx.fillStyle = hideC ? '#900' : '#ff3333';
+      ctx.font = hideC ? 'bold 20px sans-serif' : '16px sans-serif';
+      const cLabel = hideC ? '?' : 'c';
+      ctx.fillText(cLabel, (sBx + sCx)/2 + 10, (sBy + sCy)/2 - 10);
+
+      ctx.restore();
+      return c;
+    }
+
+    // ================== 教學模式邏輯 ==================
+    function updateTeachingMode() {
+      const a = parseFloat(document.getElementById('side-a').value) || 4;
+      const b = parseFloat(document.getElementById('side-b').value) || 5;
+
+      for (let i = 1; i <= 3; i++) {
+        const slider = document.getElementById(`slider-${i}`);
+        const angle = parseFloat(slider.value);
+        
+        document.getElementById(`angle-val-${i}`).textContent = `${angle}°`;
+        
+        const c = drawTriangle(`canvas-${i}`, a, b, angle, false, false);
+        document.getElementById(`c-val-${i}`).textContent = c.toFixed(2);
+      }
+    }
+
+    document.getElementById('side-a').addEventListener('input', updateTeachingMode);
+    document.getElementById('side-b').addEventListener('input', updateTeachingMode);
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById(`slider-${i}`).addEventListener('input', updateTeachingMode);
+    }
+
+    // ================== 挑戰模式 (大小判斷) 邏輯 ==================
+    let correctOption = '';
+
+    function initChallengeMode() {
+      // 隱藏過關畫面、移除搖晃效果
+      document.getElementById('success-overlay').classList.remove('show');
+      document.getElementById('card-A').classList.remove('shake');
+      document.getElementById('card-B').classList.remove('shake');
+
+      // 隨機固定邊長
+      const chal_a = Math.floor(Math.random() * 4) + 3; // 3 ~ 6
+      const chal_b = Math.floor(Math.random() * 4) + 3; // 3 ~ 6
+      
+      // 隨機決定兩個差距至少 20 度的角度
+      let angleA = Math.floor(Math.random() * 120) + 30; // 30 ~ 149
+      let angleB = Math.floor(Math.random() * 120) + 30;
+      while (Math.abs(angleA - angleB) < 25) {
+        angleB = Math.floor(Math.random() * 120) + 30;
+      }
+
+      const cA = calculateC(chal_a, chal_b, angleA);
+      const cB = calculateC(chal_a, chal_b, angleB);
+
+      // 隨機決定題型 (0: 給角度猜邊長, 1: 給邊長猜角度)
+      const questionType = Math.random() < 0.5 ? 0 : 1;
+
+      if (questionType === 0) {
+        // 大角對大邊
+        document.getElementById('chal-question-text').innerHTML = "已知兩個三角形的藍色邊長完全相同。<br>請觀察它們的<b>夾角 θ</b>，猜猜哪一個的<b>紅色第三邊 (c) 比較長</b>？";
+        
+        document.getElementById('chal-angle-A').textContent = angleA + "°";
+        document.getElementById('chal-angle-B').textContent = angleB + "°";
+        document.getElementById('chal-c-A').textContent = "???";
+        document.getElementById('chal-c-B').textContent = "???";
+        
+        drawTriangle('canvas-chal-A', chal_a, chal_b, angleA, false, true); // 隱藏 c
+        drawTriangle('canvas-chal-B', chal_a, chal_b, angleB, false, true);
+        
+        correctOption = angleA > angleB ? 'A' : 'B';
+      } else {
+        // 大邊對大角
+        document.getElementById('chal-question-text').innerHTML = "已知兩個三角形的藍色邊長完全相同。<br>請觀察它們的<b>紅色第三邊 (c)</b>，猜猜哪一個的<b>橘色夾角 (θ) 比較大</b>？";
+        
+        document.getElementById('chal-angle-A').textContent = "???";
+        document.getElementById('chal-angle-B').textContent = "???";
+        document.getElementById('chal-c-A').textContent = cA.toFixed(1);
+        document.getElementById('chal-c-B').textContent = cB.toFixed(1);
+        
+        drawTriangle('canvas-chal-A', chal_a, chal_b, angleA, true, false); // 隱藏 angle
+        drawTriangle('canvas-chal-B', chal_a, chal_b, angleB, true, false);
+        
+        correctOption = cA > cB ? 'A' : 'B';
+      }
+    }
+
+    function checkAnswer(selected) {
+      if (selected === correctOption) {
+        // 答對，顯示過關視窗
+        document.getElementById('success-overlay').classList.add('show');
+      } else {
+        // 答錯，加入搖晃動畫
+        const card = document.getElementById(
