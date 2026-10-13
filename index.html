@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📐 樞紐定理與大小關係互動探索</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --blue-line: #3498db;
+            --red-line: #e74c3c;
+            --bg-color: #f5f7fa;
+            --panel-bg: #ffffff;
+            --success-color: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* 模式切換按鈕 */
+        .mode-switch {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 10px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            background-color: #e0e6ed;
+            color: #7f8c8d;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1400px;
+            gap: 20px;
+        }
+
+        /* 共用卡片樣式 */
+        .panel-card {
+            background-color: var(--panel-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* 自由探索模式 */
+        #exploreMode {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .controls-top {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .input-group input[type="number"] {
+            width: 80px;
+            font-size: 1.3rem;
+            padding: 5px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .comparison-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        .triangle-card {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        .canvas-wrapper {
+            flex: 1;
+            aspect-ratio: 4/3;
+            margin-top: 10px;
+        }
+
+        /* 遊戲模式 */
+        #gameMode {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .game-dashboard {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+        }
+        .mission-box {
+            background-color: #fff3cd;
+            border: 2px solid #ffe69c;
+            color: #664d03;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .game-canvas-wrapper {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            margin: 0 auto;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .game-btn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .game-btn:hover { background-color: #2980b9; }
+
+        /* 回饋區 */
+        .feedback-overlay {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            z-index: 10;
+            width: 85%;
+            max-width: 450px;
+        }
+        .success-border { border: 4px solid var(--success-color); }
+        .fail-border { border: 4px solid var(--red-line); }
+        
+        .capybara-icon { font-size: 4rem; margin-bottom: 10px; }
+        .feedback-text { font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; line-height: 1.6; }
+        .action-btn { border: none; padding: 10px 20px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
+        .bg-success { background-color: var(--success-color); }
+        .bg-success:hover { background-color: #219a52; }
+        .bg-fail { background-color: var(--red-line); }
+        .bg-fail:hover { background-color: #c0392b; }
+
+        /* UI 元件通用 */
+        input[type="range"] { width: 100%; cursor: pointer; }
+        canvas { width: 100%; height: 100%; background-color: white; border: 2px dashed #bdc3c7; border-radius: 8px; }
+        .data-display { background-color: #e8f4f8; padding: 10px; border-radius: 8px; font-size: 1.1rem; margin-bottom: 15px; text-align: center; line-height: 1.5; }
+        .highlight { font-weight: bold; color: #d35400; }
+    </style>
+</head>
+<body>
+
+    <h1>📐 樞紐定理與大小關係互動探索</h1>
+
+    <!-- 模式切換 -->
+    <div class="mode-switch">
+        <button class="mode-btn active" id="btnExplore">自由探索模式</button>
+        <button class="mode-btn" id="btnGame">水豚老師大小挑戰 🎮</button>
+    </div>
+
+    <div class="container">
+        <!-- ================= 自由探索模式 ================= -->
+        <div id="exploreMode">
+            <div class="panel-card controls-top">
+                <div class="input-group">
+                    <label>藍色固定邊長 a：</label>
+                    <input type="number" id="sideA" value="4" min="0.1" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>藍色固定邊長 b：</label>
+                    <input type="number" id="sideB" value="5" min="0.1" step="0.1">
+                </div>
+            </div>
+
+            <div class="comparison-area">
+                <!-- 左卡：銳角 -->
+                <div class="panel-card triangle-card">
+                    <div><label style="font-weight:bold; font-size:1.1rem;">夾角 &theta;₁：<span id="valTheta1">40</span>&deg;</label><input type="range" id="angle1" value="40" min="10" max="170"></div>
+                    <div class="data-display">僅顯示夾角大小，觀察長度變化<br><span class="highlight">夾角：<span id="labelT1">40</span>&deg;</span></div>
+                    <div class="canvas-wrapper"><canvas id="canvas1"></canvas></div>
+                </div>
+                <!-- 中卡：三邊三角大對決 -->
+                <div class="panel-card triangle-card" style="flex: 1.2;">
+                    <div><label style="font-weight:bold; font-size:1.1rem;">自由拉動夾角 &theta;₂：<span id="valTheta2">75</span>&deg;</label><input type="range" id="angle2" value="75" min="10" max="170"></div>
+                    <div class="data-display" id="multiData">
+                        邊長：a = 4.0 , b = 5.0 , c = <span id="labelC2">5.5</span><br>
+                        角度：&angle;A = <span id="angA">0</span>&deg; , &angle;B = <span id="angB">0</span>&deg; , &angle;C = <span id="angC">0</span>&deg;<br>
+                        <span class="highlight" style="font-size:0.95rem;">💡 最大的角所對應的邊，也是最長的一條邊喔！</span>
+                    </div>
+                    <div class="canvas-wrapper"><canvas id="canvas2"></canvas></div>
+                </div>
+                <!-- 右卡：鈍角 -->
+                <div class="panel-card triangle-card">
+                    <div><label style="font-weight:bold; font-size:1.1rem;">夾角 &theta;₃：<span id="valTheta3">140</span>&deg;</label><input type="range" id="angle3" value="140" min="10" max="170"></div>
+                    <div class="data-display">僅顯示夾角大小，觀察長度變化<br><span class="highlight">夾角：<span id="labelT3">140</span>&deg;</span></div>
+                    <div class="canvas-wrapper"><canvas id="canvas3"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 遊戲模式 ================= -->
+        <div id="gameMode">
+            <div class="panel-card game-dashboard">
+                <div class="mission-box" id="gameMissionBox">
+                    載入中...
+                </div>
+
+                <div class="game-canvas-wrapper panel-card">
+                    <canvas id="gameCanvas"></canvas>
+                </div>
+
+                <!-- 回答按鈕 -->
+                <div class="btn-group" id="answerButtonGroup">
+                    <!-- 依關卡動態生成 -->
+                </div>
+
+                <!-- 回饋彈窗 -->
+                <div class="feedback-overlay" id="feedbackOverlay">
+                    <div class="capybara-icon" id="fbIcon">🦫</div>
+                    <div class="feedback-text" id="fbText">回饋訊息</div>
+                    <button class="action-btn" id="fbActionBtn">繼續</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ======= 模式切換 =======
+        const btnExplore = document.getElementById('btnExplore');
+        const btnGame = document.getElementById('btnGame');
+        const exploreMode = document.getElementById('exploreMode');
+        const gameMode = document.getElementById('gameMode');
+
+        btnExplore.addEventListener('click', () => {
+            btnExplore.classList.add('active');
+            btnGame.classList.remove('active');
+            exploreMode.style.display = 'flex';
+            gameMode.style.display = 'none';
+            resizeCanvases();
+        });
+
+        btnGame.addEventListener('click', () => {
+            btnGame.classList.add('active');
+            btnExplore.classList.remove('active');
+            exploreMode.style.display = 'none';
+            gameMode.style.display = 'flex';
+            startNewGame();
+            resizeCanvases();
+        });
+
+        // ======= 繪圖工具 =======
+        function drawTriangle(canvas, a, b, thetaDeg, labelStyle = 'basic', highlightAngle = false) {
+            const ctx = canvas.getContext('2d');
+            const thetaRad = thetaDeg * Math.PI / 180;
+            const c = Math.sqrt(a*a + b*b - 2*a*b*Math.cos(thetaRad));
+
+            // 計算三角內角 (正弦與餘弦定理)
+            let angleA = Math.round(Math.acos((b*b + c*c - a*a) / (2*b*c)) * 180 / Math.PI);
+            let angleB = thetaDeg;
+            let angleC = 180 - angleA - angleB;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const p1 = { x: 0, y: 0 }; // 角B (夾角)
+            const p2 = { x: b, y: 0 }; // 角C (b 邊終點)
+            const p3 = { x: a * Math.cos(thetaRad), y: -a * Math.sin(thetaRad) }; // 角A
+
+            // 自適應縮放
+            const bboxWidth = Math.max(a, b) * 2.2;
+            const scale = Math.min((canvas.width * 0.75) / bboxWidth, (canvas.height * 0.75) / Math.max(a, b));
+
+            const toX = x => canvas.width/2 + (x - b/2) * scale;
+            const toY = y => canvas.height/2 + (y + a/2.5) * scale;
+
+            const cP1 = { x: toX(p1.x), y: toY(p1.y) };
+            const cP2 = { x: toX(p2.x), y: toY(p2.y) };
+            const cP3 = { x: toX(p3.x), y: toY(p3.y) };
+
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+            // 1. 夾角圓弧
+            ctx.beginPath();
+            ctx.arc(cP1.x, cP1.y, 25, 0, -thetaRad, true); 
+            ctx.strokeStyle = 'rgba(230, 126, 34, 0.2)'; ctx.lineWidth = 10; ctx.stroke();
+
+            // 2. 畫固定邊 b
+            ctx.beginPath(); ctx.moveTo(cP1.x, cP1.y); ctx.lineTo(cP2.x, cP2.y);
+            ctx.strokeStyle = '#3498db'; ctx.lineWidth = 5; ctx.stroke();
+
+            // 3. 畫固定邊 a
+            ctx.beginPath(); ctx.moveTo(cP1.x, cP1.y); ctx.lineTo(cP3.x, cP3.y);
+            ctx.strokeStyle = '#3498db'; ctx.lineWidth = 5; ctx.stroke();
+
+            // 4. 畫第三邊 c (紅色虛線)
+            ctx.beginPath(); ctx.moveTo(cP2.x, cP2.y); ctx.lineTo(cP3.x, cP3.y);
+            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 5; ctx.setLineDash([8, 6]); ctx.stroke();
+            ctx.setLineDash([]); // 恢復實線
+
+            // 繪製端點標籤與長度
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 16px Arial';
+
+            if (labelStyle === 'full') {
+                // 標示角名稱
+                ctx.fillText('A', cP3.x - 5, cP3.y - 12);
+                ctx.fillText('B', cP1.x - 15, cP1.y + 15);
+                ctx.fillText('C', cP2.x + 10, cP2.y + 15);
+
+                // 標示與角度對應之邊長
+                ctx.font = '14px Arial';
+                ctx.fillText(`a = ${a.toFixed(1)}`, (cP1.x + cP3.x)/2 - 35, (cP1.y + cP3.y)/2);
+                ctx.fillText(`b = ${b.toFixed(1)}`, (cP1.x + cP2.x)/2 - 15, cP1.y + 20);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillText(`c = ${c.toFixed(1)}`, (cP2.x + cP3.x)/2 + 10, (cP2.y + cP3.y)/2 - 5);
+            } else if (labelStyle === 'game_edge_to_angle') {
+                // 遊戲：給三邊，找出最大角 (隱藏角度數值，但標出 ABC)
+                ctx.fillText('A', cP3.x - 5, cP3.y - 12);
+                ctx.fillText('B', cP1.x - 15, cP1.y + 15);
+                ctx.fillText('C', cP2.x + 10, cP2.y + 15);
+
+                ctx.font = '14px Arial';
+                ctx.fillText(`邊長 ${a.toFixed(1)}`, (cP1.x + cP3.x)/2 - 40, (cP1.y + cP3.y)/2);
+                ctx.fillText(`邊長 ${b.toFixed(1)}`, (cP1.x + cP2.x)/2 - 20, cP1.y + 20);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillText(`邊長 ${c.toFixed(1)}`, (cP2.x + cP3.x)/2 + 10, (cP2.y + cP3.y)/2 - 5);
+            } else if (labelStyle === 'game_angle_to_edge') {
+                // 遊戲：比角大小與第三邊的關係 (標出夾角，隱藏第三邊)
+                ctx.fillText(`${thetaDeg}°`, cP1.x + 15, cP1.y - 10);
+                ctx.font = '14px Arial';
+                ctx.fillText(`邊長 a = ${a}`, (cP1.x + cP3.x)/2 - 40, (cP1.y + cP3.y)/2);
+                ctx.fillText(`邊長 b = ${b}`, (cP1.x + cP2.x)/2 - 20, cP1.y + 20);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillText(`第三邊 c = ?`, (cP2.x + cP3.x)/2 + 10, (cP2.y + cP3.y)/2 - 5);
+            }
+
+            return { c, angleA, angleB, angleC };
+        }
+
+        // ======= 自由探索模式邏輯 =======
+        const inputA = document.getElementById('sideA');
+        const inputB = document.getElementById('sideB');
+        const panels = [
+            { slider: document.getElementById('angle1'), labelT: document.getElementById('valTheta1'), textT: document.getElementById('labelT1'), canvas: document.getElementById('canvas1') },
+            { slider: document.getElementById('angle2'), labelT: document.getElementById('valTheta2'), textC: document.getElementById('labelC2'), canvas: document.getElementById('canvas2') },
+            { slider: document.getElementById('angle3'), labelT: document.getElementById('valTheta3'), textT: document.getElementById('labelT3'), canvas: document.getElementById('canvas3') }
+        ];
+
+        function updateExplore() {
+            let a = parseFloat(inputA.value) || 4;
+            let b = parseFloat(inputB.value) || 5;
+
+            // 確保資料大於零防呆
+            if (a <= 0) a = 0.1;
+            if (b <= 0) b = 0.1;
+
+            panels.forEach((p, idx) => {
+                const deg = parseFloat(p.slider.value);
+                p.labelT.textContent = deg;
+                if (idx === 0 || idx === 2) {
+                    p.textT.textContent = deg;
+                    drawTriangle(p.canvas, a, b, deg, 'basic');
+                } else {
+                    const data = drawTriangle(p.canvas, a, b, deg, 'full');
+                    p.textC.textContent = data.c.toFixed(1);
+                    document.getElementById('angA').textContent = data.angleA;
+                    document.getElementById('angB').textContent = data.angleB;
+                    document.getElementById('angC').textContent = data.angleC;
+                }
+            });
+        }
+        inputA.addEventListener('input', updateExplore);
+        inputB.addEventListener('input', updateExplore);
+        panels.forEach(p => p.slider.addEventListener('input', updateExplore));
+
+
+        // ======= 遊戲模式邏輯 =======
+        let currentGameStage = 1; // 1: 夾角比對邊 (Hinge), 2: 邊長比最大角
+        let gameA, gameB, gameThetaA, gameThetaB; // 關卡1 的暫存變數 (左與右)
+        let gameSideA, gameSideB, gameSideC; // 關卡2 暫存變數
+        const gameCanvas = document.getElementById('gameCanvas');
+        const gameMissionBox = document.getElementById('gameMissionBox');
+        const btnGroup = document.getElementById('answerButtonGroup');
+        const feedbackOverlay = document.getElementById('feedbackOverlay');
+        const fbIcon = document.getElementById('fbIcon');
+        const fbText = document.getElementById('fbText');
+        const fbActionBtn = document.getElementById('fbActionBtn');
+
+        function startNewGame() {
+            feedbackOverlay.style.display = 'none';
+            btnGroup.innerHTML = '';
+
+            if (currentGameStage === 1) {
+                // 第一關：夾角比第三邊 (給兩個三角形對比，判斷誰的第三邊長)
+                gameA = 4;
+                gameB = 5;
+                gameThetaA = Math.floor(Math.random() * 40) + 30;  // 左邊角較小
+                gameThetaB = Math.floor(Math.random() * 60) + 100; // 右邊角較大
+
+                // 隨機調換左右
+                const swap = Math.random() < 0.5;
+                if (swap) {
+                    const temp = gameThetaA;
+                    gameThetaA = gameThetaB;
+                    gameThetaB = temp;
+                }
+
+                gameMissionBox.innerHTML = `🌟 【第一關：夾角比邊長挑戰】 🌟<br>🦫 水豚老師問：這裡有兩個三角形。哪一個三角形的 <span class="highlight">紅色第三邊 (c) 比較長</span> 呢？<br><span style="font-size:0.95rem; color:#555;">(💡 秘訣：夾角張得比較開、角度比較大的，對邊就比較長喔！)</span>`;
+                
+                // 動態繪製雙三角形於一個畫布上
+                drawDualTriangleForGame(gameCanvas, gameA, gameB, gameThetaA, gameThetaB);
+
+                // 動態生成按鈕
+                const optA = document.createElement('button');
+                optA.className = 'game-btn';
+                optA.textContent = '左邊 A 比較長';
+                optA.onclick = () => checkAnswerStage1(gameThetaA > gameThetaB ? 'A' : 'B');
+
+                const optB = document.createElement('button');
+                optB.className = 'game-btn';
+                optB.textContent = '右邊 B 比較長';
+                optB.onclick = () => checkAnswerStage1(gameThetaB > gameThetaA ? 'B' : 'A');
+
+                btnGroup.appendChild(optA);
+                btnGroup.appendChild(optB);
+
+            } else {
+                // 第二關：邊長比最大角 (大邊對大角)
+                // 隨機產生一組符合大邊對大角的邊
+                gameSideA = Math.floor(Math.random() * 4) + 5; // 5~8
+                gameSideB = Math.floor(Math.random() * 3) + 3; // 3~5
+                // 用餘弦定理與角度範圍生成合法的第三邊 c 
+                const randAngle = Math.floor(Math.random() * 60) + 95; // 鈍角確保 c 最大
+                gameSideC = parseFloat(Math.sqrt(gameSideA*gameSideA + gameSideB*gameSideB - 2*gameSideA*gameSideB*Math.cos(randAngle * Math.PI / 180)).toFixed(1));
+
+                gameMissionBox.innerHTML = `🌟 【第二關：邊長與角的大小挑戰】 🌟<br>🦫 水豚老師問：已知三角形的三條邊長。請利用 <span class="highlight">『大邊對大角』</span> 的原理，找出哪一個角最大？<br><span style="font-size:0.95rem; color:#555;">(💡 秘訣：最長的邊，它對面的角就是最大的角喔！)</span>`;
+
+                // 畫出單一三角形，顯示三邊長，隱藏角度
+                drawTriangle(gameCanvas, gameSideA, gameSideB, randAngle, 'game_edge_to_angle');
+
+                // 動態生成按鈕 (&angle;A, &angle;B, &angle;C)
+                // c 是對 B 邊角 (因為 b 才是水平線，在此 B 是夾角)， a對 C，b對 A
+                // 找出最長邊
+                let maxSide = Math.max(gameSideA, gameSideB, gameSideC);
+                let correctAngle = 'B'; // 預設夾角
+                if (maxSide === gameSideA) correctAngle = 'A';
+                if (maxSide === gameSideB) correctAngle = 'C';
+
+                const optA = document.createElement('button');
+                optA.className = 'game-btn';
+                optA.textContent = '∠A 最大';
+                optA.onclick = () => checkAnswerStage2(correctAngle === 'A');
+
+                const optB = document.createElement('button');
+                optB.className = 'game-btn';
+                optB.textContent = '∠B 最大';
+                optB.onclick = () => checkAnswerStage2(correctAngle === 'B');
+
+                const optC = document.createElement('button');
+                optC.className = 'game-btn';
+                optC.textContent = '∠C 最大';
+                optC.onclick = () => checkAnswerStage2(correctAngle === 'C');
+
+                btnGroup.appendChild(optA);
+                btnGroup.appendChild(optB);
+                btnGroup.appendChild(optC);
+            }
+        }
+
+        // 繪製第一關專用(兩顆三角形並排)
+        function drawDualTriangleForGame(canvas, a, b, theta1, theta2) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const scale = Math.min((canvas.width * 0.35) / (Math.max(a, b)*2), (canvas.height * 0.7) / Math.max(a, b));
+
+            // 左邊 A
+            drawSingleOffsetTriangle(ctx, a, b, theta1, canvas.width*0.25 - b*scale/2, canvas.height/2 + a*scale/3, scale, 'A', theta1);
+            // 右邊 B
+            drawSingleOffsetTriangle(ctx, a, b, theta2, canvas.width*0.75 - b*scale/2, canvas.height/2 + a*scale/3, scale, 'B', theta2);
+        }
+
+        function drawSingleOffsetTriangle(ctx, a, b, thetaDeg, offsetX, offsetY, scale, label, theta) {
+            const thetaRad = thetaDeg * Math.PI / 180;
+            const p1 = { x: 0, y: 0 };
+            const p2 = { x: b, y: 0 };
+            const p3 = { x: a * Math.cos(thetaRad), y: -a * Math.sin(thetaRad) };
+
+            const cP1 = { x: offsetX + p1.x * scale, y: offsetY + p1.y * scale };
+            const cP2 = { x: offsetX + p2.x * scale, y: offsetY + p2.y * scale };
+            const cP3 = { x: offsetX + p3.x * scale, y: offsetY + p3.y * scale };
+
+            // 圓弧
+            ctx.beginPath();
+            ctx.arc(cP1.x, cP1.y, 20, 0, -thetaRad, true); 
+            ctx.strokeStyle = 'rgba(230, 126, 34, 0.2)'; ctx.lineWidth = 8; ctx.stroke();
+
+            // 固定邊
+            ctx.beginPath(); ctx.moveTo(cP1.x, cP1.y); ctx.lineTo(cP2.x, cP2.y);
+            ctx.strokeStyle = '#3498db'; ctx.lineWidth = 4; ctx.stroke();
+
+            ctx.beginPath(); ctx.moveTo(cP1.x, cP1.y); ctx.lineTo(cP3.x, cP3.y);
+            ctx.strokeStyle = '#3498db'; ctx.lineWidth = 4; ctx.stroke();
+
+            // 變動邊
+            ctx.beginPath(); ctx.moveTo(cP2.x, cP2.y); ctx.lineTo(cP3.x, cP3.y);
+            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 4; ctx.setLineDash([6, 5]); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 標示與角度
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText(label, offsetX + b*scale/2 - 5, offsetY - a*scale - 10);
+
+            ctx.font = '14px Arial';
+            ctx.fillText(`夾角: ${thetaDeg}°`, cP1.x - 5, cP1.y + 18);
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillText(`c = ?`, (cP2.x + cP3.x)/2 + 10, (cP2.y + cP3.y)/2);
+        }
+
+        function checkAnswerStage1(isCorrect) {
+            feedbackOverlay.style.display = 'block';
+            if (isCorrect === 'A' || isCorrect === true) {
+                fbIcon.textContent = '🦫🎉';
+                fbText.innerHTML = `水豚老師：答對了！夾角越大，張開的紅色對邊 c 就越長喔！`;
+                feedbackOverlay.className = 'feedback-overlay success-border';
+                fbActionBtn.textContent = '挑戰第二關：邊與角關係';
+                fbActionBtn.className = 'action-btn bg-success';
+                fbActionBtn.onclick = () => {
+                    currentGameStage = 2;
+                    startNewGame();
+                };
+            } else {
+                fbIcon.textContent = '🦫🤔';
+                fbText.innerHTML = `再仔細看看，哪一個角度張得比較開呢？張得越開，紅色對邊就會被拉得越長喔！`;
+                feedbackOverlay.className = 'feedback-overlay fail-border';
+                fbActionBtn.textContent = '再試一次';
+                fbActionBtn.className = 'action-btn bg-fail';
+                fbActionBtn.onclick = () => feedbackOverlay.style.display = 'none';
+            }
+        }
+
+        function checkAnswerStage2(isCorrect) {
+            feedbackOverlay.style.display = 'block';
+            if (isCorrect) {
+                fbIcon.textContent = '👑🦫';
+                fbText.innerHTML = `水豚老師：答對了！大邊對大角！最長的邊，它對面的角就是最大的角！你太厲害了！💯`;
+                feedbackOverlay.className = 'feedback-overlay success-border';
+                fbActionBtn.textContent = '再玩一題！';
+                fbActionBtn.className = 'action-btn bg-success';
+                fbActionBtn.onclick = () => {
+                    currentGameStage = 1; // 循環回到第一關
+                    startNewGame();
+                };
+            } else {
+                fbIcon.textContent = '🦫❔';
+                fbText.innerHTML = `再想想看，長度最長的是哪一條邊？它「對面」的是哪一個角呢？對應的角就是最大的角喔！`;
+                feedbackOverlay.className = 'feedback-overlay fail-border';
+                fbActionBtn.textContent = '再試一次';
+                fbActionBtn.className = 'action-btn bg-fail';
+                fbActionBtn.onclick = () => feedbackOverlay.style.display = 'none';
+            }
+        }
+
+
+        // ======= 初始化與 RWD =======
+        function resizeCanvases() {
+            document.querySelectorAll('canvas').forEach(c => {
+                c.width = c.clientWidth;
+                c.height = c.clientHeight;
+            });
+            updateExplore();
+            if (gameMode.style.display === 'flex') {
+                startNewGame();
+            }
+        }
+        window.addEventListener('resize', resizeCanvases);
+        setTimeout(resizeCanvases, 100);
+    </script>
+</body>
+</html>
